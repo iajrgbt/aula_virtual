@@ -169,6 +169,5 @@ app.get('/api/inspector/historico.csv', inspectorAuth, (req, res) => {
   res.set('Content-Disposition', 'attachment; filename="historico_conexiones.csv"');
   res.send('\uFEFF' + csv);
 });
-});
 
 app.listen(PORT, () => console.log(`Aula virtual CAP escuchando en el puerto ${PORT}`));
