@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Aula Virtual CAP</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;color:#222;}
+  input,button{padding:10px;margin:4px 0;font-size:15px;}
+  input{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;}
+  button{background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:12px;width:100%;}
+  table{width:100%;border-collapse:collapse;margin-top:24px;}
+  td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px;}
+  code{background:#eef;padding:2px 6px;border-radius:4px;}
+</style>
+</head>
+<body>
+<h2>Crear sesión de aula virtual</h2>
+<form id="f">
+  <input id="curso" placeholder="Curso (ej: CAP Inicial Ordinario - Grupo 3)" required>
+  <input id="fecha" type="date" required>
+  <button type="submit">Crear sesión</button>
+</form>
+
+<h3>Sesiones creadas</h3>
+<p>Comparte el <b>código de sala</b> con los alumnos de esa sesión (por WhatsApp, email, etc.).</p>
+<table>
+  <thead><tr><th>Curso</th><th>Fecha</th><th>Código de sala</th></tr></thead>
+  <tbody id="cuerpo"></tbody>
+</table>
+
+<script>
+async function cargar() {
+  const r = await fetch('/api/admin/sesiones');
+  const data = await r.json();
+  document.getElementById('cuerpo').innerHTML = data.map(s =>
+    `<tr><td>${s.curso}</td><td>${s.fecha}</td><td><code>${s.sala}</code></td></tr>`
+  ).join('');
+}
+document.getElementById('f').onsubmit = async (e) => {
+  e.preventDefault();
+  const curso = document.getElementById('curso').value;
+  const fecha = document.getElementById('fecha').value;
+  await fetch('/api/admin/sesiones', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ curso, fecha })
+  });
+  document.getElementById('f').reset();
+  cargar();
+};
+cargar();
+</script>
+</body>
+</html>

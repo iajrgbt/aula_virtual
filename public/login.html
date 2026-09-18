@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula Virtual CAP</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:420px;margin:60px auto;padding:0 20px;color:#222;}
+  h2{margin-bottom:4px;}
+  input{width:100%;padding:12px;margin:8px 0;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:15px;}
+  button{width:100%;padding:14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;font-size:16px;cursor:pointer;margin-top:8px;}
+  button:hover{background:#1558b0;}
+  .aviso{background:#fff3cd;padding:12px;border-radius:6px;font-size:13px;margin-bottom:16px;line-height:1.4;}
+</style>
+</head>
+<body>
+<h2>Aula Virtual CAP</h2>
+<div class="aviso">
+  Al entrar, tu conexión (DNI, hora de entrada y salida) queda registrada durante 2 años conforme al RD 487/2026.
+  Tu cámara debe permanecer conectada durante toda la sesión.
+</div>
+<form id="f">
+  <input id="dni" placeholder="DNI" required autocomplete="off">
+  <input id="nombre" placeholder="Nombre y apellidos" required autocomplete="off">
+  <input id="sala" placeholder="Código de sala (te lo da tu profesor)" required autocomplete="off">
+  <button type="submit">Entrar al aula</button>
+</form>
+<script>
+document.getElementById('f').onsubmit = async (e) => {
+  e.preventDefault();
+  const dni = document.getElementById('dni').value.trim();
+  const nombre = document.getElementById('nombre').value.trim();
+  const sala = document.getElementById('sala').value.trim();
+  const r = await fetch('/api/join', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({dni, nombre, sala})
+  });
+  const data = await r.json();
+  if (!r.ok) { alert(data.error || 'Error al entrar'); return; }
+  sessionStorage.setItem('conexionId', data.conexionId);
+  sessionStorage.setItem('nombre', nombre);
+  window.location.href = '/aula/' + data.sala;
+};
+</script>
+</body>
+</html>

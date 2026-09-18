@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Modo Inspección - Aula Virtual CAP</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:1000px;margin:40px auto;padding:0 20px;color:#222;}
+  table{width:100%;border-collapse:collapse;margin-top:16px;}
+  td,th{border:1px solid #ddd;padding:8px;font-size:13px;text-align:left;}
+  th{background:#f5f5f5;}
+  .en-vivo{color:#0a7d1e;font-weight:bold;}
+  .aviso-camara{color:#b00020;font-weight:bold;}
+</style>
+</head>
+<body>
+<h2>Conexiones en directo <span class="en-vivo">● en vivo</span></h2>
+<table>
+  <thead><tr><th>DNI</th><th>Nombre</th><th>Curso</th><th>Sala</th><th>Hora entrada</th><th>Incidencias cámara</th></tr></thead>
+  <tbody id="vivo"></tbody>
+</table>
+
+<h2>Histórico de conexiones (registro mínimo 2 años)</h2>
+<table>
+  <thead><tr><th>DNI</th><th>Nombre</th><th>Curso</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Duración</th><th>Incidencias cámara</th></tr></thead>
+  <tbody id="historico"></tbody>
+</table>
+
+<script>
+async function cargarVivo() {
+  const r = await fetch('/api/inspector/en-vivo');
+  const data = await r.json();
+  document.getElementById('vivo').innerHTML = data.length ? data.map(c =>
+    `<tr><td>${c.dni}</td><td>${c.nombre}</td><td>${c.curso}</td><td>${c.sala}</td><td>${new Date(c.hora_entrada).toLocaleString('es-ES')}</td><td class="${c.camara_incidencias > 0 ? 'aviso-camara' : ''}">${c.camara_incidencias}</td></tr>`
+  ).join('') : '<tr><td colspan="6">Sin conexiones activas en este momento</td></tr>';
+}
+async function cargarHistorico() {
+  const r = await fetch('/api/inspector/historico');
+  const data = await r.json();
+  document.getElementById('historico').innerHTML = data.map(c =>
+    `<tr><td>${c.dni}</td><td>${c.nombre}</td><td>${c.curso}</td><td>${c.fecha}</td><td>${new Date(c.hora_entrada).toLocaleString('es-ES')}</td><td>${c.hora_salida ? new Date(c.hora_salida).toLocaleString('es-ES') : '—'}</td><td>${c.duracion_segundos ? Math.round(c.duracion_segundos/60) + ' min' : '—'}</td><td class="${c.camara_incidencias > 0 ? 'aviso-camara' : ''}">${c.camara_incidencias}</td></tr>`
+  ).join('');
+}
+cargarVivo();
+cargarHistorico();
+setInterval(cargarVivo, 5000);
+</script>
+</body>
+</html>

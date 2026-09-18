@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula Virtual CAP</title>
+<script src="https://meet.jit.si/external_api.js"></script>
+<style>
+  body,html{margin:0;height:100%;background:#000;}
+  #jitsi{height:100vh;}
+</style>
+</head>
+<body>
+<div id="jitsi"></div>
+<script>
+const sala = window.location.pathname.split('/').pop();
+const conexionId = sessionStorage.getItem('conexionId');
+const nombre = sessionStorage.getItem('nombre') || 'Alumno';
+
+if (!conexionId) {
+  window.location.href = '/';
+}
+
+const api = new JitsiMeetExternalAPI('meet.jit.si', {
+  roomName: sala,
+  parentNode: document.querySelector('#jitsi'),
+  userInfo: { displayName: nombre },
+  configOverwrite: {
+    startWithVideoMuted: false,
+    prejoinPageEnabled: false
+  },
+  interfaceConfigOverwrite: {
+    // Sin botón de cámara: el alumno no puede apagarla desde la interfaz
+    TOOLBAR_BUTTONS: ['microphone', 'tileview', 'hangup', 'chat', 'desktop', 'fullscreen']
+  }
+});
+
+function cerrarConexion() {
+  navigator.sendBeacon('/api/leave', JSON.stringify({ conexionId }));
+}
+
+api.addEventListener('videoConferenceLeft', cerrarConexion);
+window.addEventListener('beforeunload', cerrarConexion);
+
+// Si, aun así, la cámara se apaga por otra vía, queda registrado como incidencia
+api.addEventListener('videoMuteStatusChanged', (e) => {
+  if (e.muted) {
+    fetch('/api/incidencia-camara', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ conexionId })
+    });
+  }
+});
+</script>
+</body>
+</html>
