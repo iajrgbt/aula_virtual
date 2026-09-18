@@ -151,12 +151,24 @@ app.get('/api/inspector/historico.csv', inspectorAuth, (req, res) => {
     FROM conexiones c JOIN sesiones s ON s.id = c.sesion_id
     ORDER BY c.hora_entrada DESC
   `).all();
-  const header = 'DNI,Nombre,Curso,Fecha,Sala,Entrada,Salida,Duracion_segundos,Incidencias_camara\n';
-  const csv = rows.map(r => [r.dni, r.nombre, r.curso, r.fecha, r.sala, r.hora_entrada, r.hora_salida || '', r.duracion_segundos || '', r.camara_incidencias]
-    .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+
+  const fecha = (iso) => iso ? new Date(iso).toLocaleString('es-ES') : '';
+  const duracion = (seg) => seg ? `${Math.floor(seg / 60)} min ${seg % 60} seg` : '';
+
+  const header = ['DNI', 'Nombre', 'Curso', 'Fecha', 'Sala', 'Entrada', 'Salida', 'Duracion', 'Incidencias camara'];
+  const filas = rows.map(r => [
+    r.dni, r.nombre, r.curso, r.fecha, r.sala,
+    fecha(r.hora_entrada), fecha(r.hora_salida), duracion(r.duracion_segundos), r.camara_incidencias
+  ]);
+
+  const csv = [header, ...filas]
+    .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'))
+    .join('\r\n');
+
   res.set('Content-Type', 'text/csv; charset=utf-8');
   res.set('Content-Disposition', 'attachment; filename="historico_conexiones.csv"');
-  res.send(header + csv);
+  res.send('\uFEFF' + csv);
+});
 });
 
 app.listen(PORT, () => console.log(`Aula virtual CAP escuchando en el puerto ${PORT}`));
