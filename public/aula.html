@@ -35,8 +35,7 @@ const api = new JitsiMeetExternalAPI('meet.jit.si', {
   }
 });
 
-function cerrarConexion() {
-  navigator.sendBeacon('/api/leave', JSON.stringify({ conexionId }));
+function cerrarConexion() { const datos = new Blob([JSON.stringify({ conexionId })], { type: 'application/json' }); navigator.sendBeacon('/api/leave', datos);
 }
 
 api.addEventListener('videoConferenceLeft', cerrarConexion);
