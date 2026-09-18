@@ -145,4 +145,18 @@ app.get('/api/inspector/historico', inspectorAuth, (req, res) => {res.set('Cache
   res.json(rows);
 });
 
+app.get('/api/inspector/historico.csv', inspectorAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT c.dni, c.nombre, s.curso, s.fecha, s.sala, c.hora_entrada, c.hora_salida, c.duracion_segundos, c.camara_incidencias
+    FROM conexiones c JOIN sesiones s ON s.id = c.sesion_id
+    ORDER BY c.hora_entrada DESC
+  `).all();
+  const header = 'DNI,Nombre,Curso,Fecha,Sala,Entrada,Salida,Duracion_segundos,Incidencias_camara\n';
+  const csv = rows.map(r => [r.dni, r.nombre, r.curso, r.fecha, r.sala, r.hora_entrada, r.hora_salida || '', r.duracion_segundos || '', r.camara_incidencias]
+    .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="historico_conexiones.csv"');
+  res.send(header + csv);
+});
+
 app.listen(PORT, () => console.log(`Aula virtual CAP escuchando en el puerto ${PORT}`));
