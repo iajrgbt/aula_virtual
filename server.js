@@ -125,7 +125,7 @@ app.get('/inspector', inspectorAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inspector.html'));
 });
 
-app.get('/api/inspector/en-vivo', inspectorAuth, (req, res) => {
+app.get('/api/inspector/en-vivo', inspectorAuth, (req, res) => {res.set('Cache-Control', 'no-store');
   const rows = db.prepare(`
     SELECT c.*, s.curso, s.sala FROM conexiones c
     JOIN sesiones s ON s.id = c.sesion_id
@@ -135,7 +135,7 @@ app.get('/api/inspector/en-vivo', inspectorAuth, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/inspector/historico', inspectorAuth, (req, res) => {
+app.get('/api/inspector/historico', inspectorAuth, (req, res) => {res.set('Cache-Control', 'no-store');
   const rows = db.prepare(`
     SELECT c.*, s.curso, s.fecha, s.sala FROM conexiones c
     JOIN sesiones s ON s.id = c.sesion_id
